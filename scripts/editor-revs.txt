@@ -1,0 +1,8 @@
+# Editor component sources the app is built against. CI clones each at this commit next to the
+# repository, in the layout the Cargo path dependencies and web/package.json links expect
+# (scripts/ci/fetch-editors.sh).
+kition-sdk bff799592b38de9c201ebf3204e39cdc7c141b76
+kition-table fed55299f6cb4bee0f03ef069ac23dcdff5bac30
+kition-note 33f87efbd7e74dceefa0039ae5bd8e4b411d324d
+kition-tessera eba11c9a24aa6123a3d82a8c1e7064480bacb1ad
+kition-fonts 7c594d2b4cde74f0548a357331baef045d12d2ce

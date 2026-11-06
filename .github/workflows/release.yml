@@ -1,0 +1,203 @@
+# Builds signed and notarized macOS packages (Apple Silicon and Intel).
+#   - Run manually (Actions → Release → Run workflow): the DMGs are attached to the run as artifacts.
+#   - Push a tag vX.Y.Z matching the version in src-tauri/tauri.conf.json: the DMGs are also attached
+#     to a draft GitHub Release, published by hand after a check.
+# Without the Apple secrets the build still runs, ad-hoc signed and not notarized (for testing only).
+#
+# Secrets of the `release` environment:
+#   EDITORS_TOKEN            fine-grained token, Contents: read on the editor component repositories
+#                            in scripts/editor-revs.txt
+#   MACOS_CSC_P12_BASE64     base64 of the "Developer ID Application" certificate exported as .p12
+#   MACOS_CSC_KEY_PASSWORD   password of that .p12
+#   APPLE_API_ISSUER         App Store Connect API: Issuer ID
+#   APPLE_API_KEY_ID         App Store Connect API: Key ID
+#   APPLE_API_KEY_P8         App Store Connect API: contents of AuthKey_<Key ID>.p8
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: macOS ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            runner: macos-15
+          - arch: x86_64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    environment: release
+    timeout-minutes: 150
+    env:
+      # The Cargo path dependencies and web/package.json links expect the editor checkouts beside the repo.
+      APP: ${{ github.workspace }}/src/OutreachDex
+      EDITORS_DIR: ${{ github.workspace }}/KitionAI
+      KIT_TABLE_BIN: ${{ github.workspace }}/KitionAI/kition-table/target/release/kition-table
+      KIT_NOTE_BIN: ${{ github.workspace }}/KitionAI/kition-note/target/release/kition-note
+      CARGO_NET_GIT_FETCH_WITH_CLI: 'true'
+      CARGO_TERM_COLOR: always
+      SIGNED: ${{ secrets.MACOS_CSC_P12_BASE64 != '' }}
+      NOTARIZE: ${{ secrets.MACOS_CSC_P12_BASE64 != '' && secrets.APPLE_API_KEY_P8 != '' }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: src/OutreachDex
+
+      - name: Check tag matches app version
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: src/OutreachDex
+        run: |
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "::error::Tag $GITHUB_REF_NAME does not match tauri.conf.json version $version"; exit 1; }
+
+      - name: Fetch editor component sources
+        env:
+          EDITORS_TOKEN: ${{ secrets.EDITORS_TOKEN }}
+        run: |
+          [ -n "$EDITORS_TOKEN" ] || { echo "::error::Secret EDITORS_TOKEN is not set"; exit 1; }
+          # Also used by Cargo for the SDK git dependencies of the editors.
+          git config --global url."https://x-access-token:${EDITORS_TOKEN}@github.com/KitionAI/".insteadOf "https://github.com/KitionAI/"
+          sh "$APP/scripts/ci/fetch-editors.sh"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: src/OutreachDex/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt,clippy --target wasm32-unknown-unknown
+          rustup default 1.95.0
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack@0.13.1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.arch }}
+          workspaces: |
+            src/OutreachDex -> target
+            KitionAI/kition-table -> target
+            KitionAI/kition-note -> target
+
+      - name: Import signing certificate
+        if: env.SIGNED == 'true'
+        env:
+          MACOS_CSC_P12_BASE64: ${{ secrets.MACOS_CSC_P12_BASE64 }}
+          MACOS_CSC_KEY_PASSWORD: ${{ secrets.MACOS_CSC_KEY_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password=$(openssl rand -hex 24)
+          echo "$MACOS_CSC_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MACOS_CSC_KEY_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+          identity=$(security find-identity -v -p codesigning "$keychain" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' | head -1)
+          [ -n "$identity" ] || { echo "::error::No Developer ID Application identity in MACOS_CSC_P12_BASE64"; exit 1; }
+          echo "Signing as $identity"
+          echo "MACOS_SIGNING_IDENTITY=$identity" >> "$GITHUB_ENV"
+
+      - name: Notarization key
+        if: env.NOTARIZE == 'true'
+        env:
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          printf '%s\n' "$APPLE_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+          echo "APPLE_API_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+
+      - name: Build kits
+        run: sh "$APP/scripts/ci/build-kits.sh"
+
+      - name: Install app dependencies
+        working-directory: src/OutreachDex
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --dir web install --frozen-lockfile
+          pnpm agents:prepare
+
+      - name: Build app and DMG
+        working-directory: src/OutreachDex
+        env:
+          # Tauri notarizes and staples the .app when these are set (and APPLE_API_KEY_PATH above).
+          APPLE_API_ISSUER: ${{ env.NOTARIZE == 'true' && secrets.APPLE_API_ISSUER || '' }}
+          APPLE_API_KEY: ${{ env.NOTARIZE == 'true' && secrets.APPLE_API_KEY_ID || '' }}
+        run: |
+          if [ -n "${MACOS_SIGNING_IDENTITY:-}" ]; then
+            pnpm exec tauri build --bundles app,dmg --config "{\"bundle\":{\"macOS\":{\"signingIdentity\":\"$MACOS_SIGNING_IDENTITY\"}}}"
+          else
+            pnpm exec tauri build --bundles app,dmg
+          fi
+
+      - name: Notarize DMG
+        if: env.NOTARIZE == 'true'
+        working-directory: src/OutreachDex/target/release/bundle/dmg
+        env:
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY_ID }}
+        run: |
+          for dmg in *.dmg; do
+            xcrun notarytool submit "$dmg" --key "$APPLE_API_KEY_PATH" --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
+            xcrun stapler staple "$dmg"
+          done
+
+      - name: Verify bundle
+        working-directory: src/OutreachDex
+        run: |
+          app=target/release/bundle/macos/OutreachDex.app
+          codesign --verify --deep --strict --verbose=2 "$app"
+          if [ "$NOTARIZE" = true ]; then
+            spctl --assess --type execute --verbose=2 "$app"
+            xcrun stapler validate "$app"
+            for dmg in target/release/bundle/dmg/*.dmg; do
+              spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
+              xcrun stapler validate "$dmg"
+            done
+          fi
+          node scripts/check-bundle.mjs "$app"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OutreachDex-macos-${{ matrix.arch }}
+          path: src/OutreachDex/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/AuthKey.p8"
+
+  release:
+    name: Draft release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: OutreachDex-macos-*
+          merge-multiple: true
+          path: dist
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.dmg --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "OutreachDex ${GITHUB_REF_NAME#v}"

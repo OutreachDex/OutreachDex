@@ -1,0 +1,25 @@
+{
+  "name": "globalcontact",
+  "private": true,
+  "packageManager": "pnpm@10.16.1",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build --bundles app",
+    "kits:prepare": "node scripts/prepare-kits.mjs",
+    "kits:build": "node scripts/prepare-kits.mjs --build",
+    "web:dev": "pnpm kits:prepare && pnpm --dir web dev",
+    "web:build": "pnpm kits:prepare && pnpm --dir web build",
+    "test:flow": "node web/tests/flow.mjs",
+    "build:local": "tauri build --debug --bundles app",
+    "agents:prepare": "node scripts/prepare-agents.mjs",
+    "test:flow:webkit": "node web/tests/flow.mjs webkit",
+    "bundle:check": "node scripts/check-bundle.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  },
+  "dependencies": {
+    "@agentclientprotocol/claude-agent-acp": "0.95.0",
+    "@agentclientprotocol/codex-acp": "2.2.2"
+  }
+}

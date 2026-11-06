@@ -1,0 +1,33 @@
+{
+  "name": "globalcontact-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "kit-host": "link:../../../KitionAI/kition-sdk/packages/kit-host",
+    "kit-protocol": "link:../../../KitionAI/kition-sdk/packages/kit-protocol",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-search": "^0.16.0",
+    "@xterm/xterm": "^6.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5",
+    "playwright": "1.59.1",
+    "tailwindcss": "^4",
+    "typescript": "^5.9",
+    "vite": "^7"
+  }
+}

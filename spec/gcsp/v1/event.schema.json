@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://globalcontact.dev/spec/gcsp/v1/event.schema.json",
+  "title": "GCSP/1 event",
+  "type": "object",
+  "required": ["external_id"],
+  "if": { "not": { "properties": { "deleted": { "const": true } }, "required": ["deleted"] } },
+  "then": { "required": ["external_id", "person_external_id", "occurred_at", "type"] },
+  "properties": {
+    "external_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "person_external_id": { "type": "string", "minLength": 1 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "deleted": { "type": "boolean" },
+    "type": { "type": "string", "pattern": "^[a-z0-9_.-]{1,64}$" },
+    "title": { "type": ["string", "null"] },
+    "body_markdown": { "type": ["string", "null"] },
+    "url": { "type": ["string", "null"], "format": "uri" },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+    }
+  }
+}

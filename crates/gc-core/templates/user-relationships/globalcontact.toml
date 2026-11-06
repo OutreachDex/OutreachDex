@@ -1,0 +1,31 @@
+# OutreachDex workspace configuration · Product user relationships template.
+# role: open = not contacted yet · waiting = sent, awaiting reply · active = replied / in progress · closed = paused / resolved · suppressed = do not contact
+version = 1
+template = "user-relationships"
+
+stages = [
+  { label = "New user", role = "open" },
+  { label = "To contact", role = "open" },
+  { label = "Sent", role = "waiting" },
+  { label = "Replied", role = "active" },
+  { label = "Following up", role = "active" },
+  { label = "Resolved", role = "closed" },
+  { label = "Do not contact", role = "suppressed" },
+]
+
+[outreach]
+# Most list messages sent per day (including ones manually marked as sent).
+daily_limit = 20
+
+[contacts]
+campaigns = []
+summary_prompt = "Based on this user's profile and history, summarize what they want to achieve, the problems they hit, how their feedback was handled and the suggested next step. Write unknown for any usage without evidence. Output a single paragraph only."
+
+[[fields]]
+title = "Plan"
+type = "single_select"
+options = []
+
+[[fields]]
+title = "Open issue"
+type = "long_text"

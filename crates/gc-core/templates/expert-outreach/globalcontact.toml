@@ -1,0 +1,28 @@
+# OutreachDex workspace configuration · Expert outreach template.
+# role: open = not contacted yet · waiting = sent, awaiting reply · active = replied / in progress · closed = on hold · suppressed = do not contact
+version = 1
+template = "expert-outreach"
+
+stages = [
+  { label = "To research", role = "open" },
+  { label = "To contact", role = "open" },
+  { label = "Sent", role = "waiting" },
+  { label = "Replied", role = "active" },
+  { label = "In progress", role = "active" },
+  { label = "On hold", role = "closed" },
+  { label = "Do not contact", role = "suppressed" },
+]
+
+[outreach]
+# Most list messages sent per day (including ones manually marked as sent).
+daily_limit = 20
+
+[contacts]
+# Choices for the project / outreach campaign, e.g. a paper or a joint project. More can be added in the table.
+campaigns = []
+summary_prompt = "Based on this contact's profile, summarize their research focus, recent situation, possible hooks and anything to keep in mind. Output a single paragraph only."
+
+[[fields]]
+title = "Batch"
+type = "single_select"
+options = ["Batch 1", "Batch 2"]

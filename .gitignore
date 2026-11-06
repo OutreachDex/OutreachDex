@@ -1,0 +1,11 @@
+/target/
+/node_modules/
+/web/node_modules/
+/web/dist/
+/web/public/kits/
+/src-tauri/gen/
+.DS_Store
+
+/src-tauri/resources/
+__pycache__/
+*.pyc

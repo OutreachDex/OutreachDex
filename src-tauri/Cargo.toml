@@ -1,0 +1,26 @@
+[package]
+name = "gc-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "globalcontact"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+arboard = { version = "3", default-features = false }
+gc-source = { path = "../crates/gc-source" }
+gc-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+gc-service = { path = "../crates/gc-service" }
+gc-mcp = { path = "../crates/gc-mcp" }
+tokio.workspace = true
+tempfile = "3"

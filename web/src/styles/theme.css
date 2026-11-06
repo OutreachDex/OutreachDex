@@ -1,0 +1,110 @@
+/* Design tokens. Themes change color only; density changes size only. See docs/ui-improvements.md. */
+:root {
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --brand: #5b5bd6;
+  --brand-hover: #4f4fc8;
+  --side-w: 220px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Light: Attio */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-side: #fbfbfb;
+  --bg-sub: #f7f7f8;
+  --bg-hover: #f2f2f4;
+  --bg-active: #ececf0;
+  --bg-overlay: rgba(16, 17, 26, 0.32);
+  --line: #ececef;
+  --line-strong: #e1e1e6;
+  --text: #1c1d21;
+  --text-2: #5c5f6a;
+  --text-3: #9a9da8;
+  --accent: #5b5bd6;
+  --accent-soft: #f0f0fe;
+  --accent-text: #4a4ac4;
+  --focus: rgba(91, 91, 214, 0.35);
+  --shadow: 0 1px 2px rgba(16, 17, 26, 0.04), 0 2px 8px rgba(16, 17, 26, 0.04);
+  --shadow-pop: 0 12px 40px rgba(16, 17, 26, 0.14), 0 2px 6px rgba(16, 17, 26, 0.06);
+  --card: var(--bg);
+  --green: #e7f6ec;
+  --green-t: #1b7a3d;
+  --amber: #fdf3e1;
+  --amber-t: #9a5b00;
+  --red: #fdecec;
+  --red-t: #b42323;
+  --violet: #f1edfd;
+  --violet-t: #5b3fc4;
+  --blue: #eaf2ff;
+  --blue-t: #1f5fc4;
+  --gray: #f1f1f3;
+  --gray-t: #555863;
+  --term-bg: #fafafa;
+  --term-fg: #2b2d33;
+}
+
+/* Dark: Linear */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1011;
+  --bg-side: #0b0b0c;
+  --bg-sub: #151618;
+  --bg-hover: #1b1c1f;
+  --bg-active: #222327;
+  --bg-overlay: rgba(0, 0, 0, 0.55);
+  --line: #1f2023;
+  --line-strong: #2a2b2f;
+  --text: #e8e8ea;
+  --text-2: #9b9ca3;
+  --text-3: #62636b;
+  --accent: #7c7ff5;
+  --accent-soft: #1e1f3a;
+  --accent-text: #a5a7ff;
+  --focus: rgba(124, 127, 245, 0.45);
+  --shadow: none;
+  --shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 16px 48px rgba(0, 0, 0, 0.5);
+  --card: var(--bg-sub);
+  --green: #13261b;
+  --green-t: #5fd38d;
+  --amber: #2a2112;
+  --amber-t: #f0b450;
+  --red: #2c1516;
+  --red-t: #f27a7a;
+  --violet: #1f1b33;
+  --violet-t: #b3a4ff;
+  --blue: #121e33;
+  --blue-t: #7fb0ff;
+  --gray: #1d1e21;
+  --gray-t: #a3a4ab;
+  --term-bg: #0a0a0b;
+  --term-fg: #c9cad0;
+}
+
+[data-density="comfortable"],
+:root {
+  --row-h: 40px;
+  --fs: 13.5px;
+  --fs-sm: 12.5px;
+  --fs-xs: 11.5px;
+  --ctl-h: 30px;
+  --pad: 28px;
+  --gap: 12px;
+  --top-h: 48px;
+}
+[data-density="compact"] {
+  --row-h: 34px;
+  --fs: 13px;
+  --fs-sm: 12px;
+  --fs-xs: 11px;
+  --ctl-h: 28px;
+  --pad: 22px;
+  --gap: 10px;
+  --top-h: 44px;
+  --side-w: 210px;
+}

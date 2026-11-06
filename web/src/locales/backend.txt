@@ -1,0 +1,148 @@
+AI fields require Claude ACP to be installed and signed in.
+The Agent can't edit an approved draft.
+The Agent can only change the summary, next action and stage.
+The Agent can only change the AI analysis and channel suggestions.
+capabilities must include "people"
+contacts.ktable already exists. Use Open workspace instead.
+event.external_id must be non-empty and at most 200 characters
+person.external_id must be non-empty and at most 200 characters
+source.id may contain only lowercase letters, digits and -, length 1–63
+source.name must not be empty
+Input is too long. Paste it in parts.
+This link isn't supported.
+Unsupported field type.
+Can't merge a contact with itself.
+To protect the token, the source URL must use https:// (http://127.0.0.1 is allowed for local testing).
+Only saving and creating workspace documents is supported.
+The session has ended.
+Preferences are too long (20,000 characters max).
+Analysis cancelled.
+Analysis timed out.
+The column mapping doesn't match the file's columns. Preview again.
+Invalid column mapping.
+The original text appears more than once. Provide more context.
+The original text has changed. Read the document again.
+Only select fields can have options.
+List not found.
+List member has no contact
+A list ID may contain only lowercase letters, digits and -.
+Invalid list channel.
+The list needs a name.
+Name can't be empty.
+Field name can't be empty and must be at most 40 characters.
+They wrote again after this draft was created. Read the latest message and make sure the draft still fits before sending.
+The workspace path can't contain symbolic links.
+The workspace connection is starting. Try again shortly.
+Drafts that were sent, or whose send status is uncertain, can't be rewritten.
+All sending is paused. Resume it in Settings → Assistant.
+6 terminals are already running. End sessions you no longer need first.
+Couldn't create the contact
+This source identity wasn't found. Sync again.
+No recipient
+The recipient is on the do-not-contact list (suppression.txt) and can't be sent to.
+File not found
+The first row of the file must contain column names.
+The file is over 20 MB. Split it before importing.
+The file must be a UTF-8 CSV or TSV (in Excel, save as "CSV UTF-8").
+The document is already open in an editor.
+The document request has expired.
+The document is over 64 MB.
+Invalid list.
+Invalid address.
+Invalid channel.
+Invalid draft.
+Invalid draft action.
+Invalid draft path.
+Invalid path
+Invalid path.
+Invalid date
+Date must be YYYY-MM-DD
+No incoming mailbox found for this workspace.
+Unknown Agent task.
+Unknown action.
+Unknown terminal action.
+Unknown entry type.
+The permission request has expired.
+Source not found. It may have been deleted.
+The source URL can't contain ? or # parts.
+The source URL must start with https://.
+The dossier is missing the Agent section marker.
+The dossier is missing the Agent section end marker.
+Check failed
+Copy this and send it manually on this channel.
+This draft already has a send record and can't be sent again.
+Open this attachment from the workspace folder.
+Clear follow-up date
+Channel value and source can't be empty.
+Usage: globalcontact source check <base-url> [--token T] [--header H]
+This terminal belongs to another workspace.
+The terminal has ended. You can start a new session.
+The terminal recording thread was interrupted.
+The editor can only write .ktable or .md documents.
+The editor was closed. Try again.
+The editor isn't responding. The original file was kept; reopen the document and try again.
+Missing external ID
+Missing source
+Missing terminal input.
+Missing fields to change
+Missing path
+Section content can't contain Agent boundary markers.
+Couldn't save the draft
+Draft has no contact
+The draft path doesn't match the contact.
+The entry is empty.
+This draft was sent or its send status is uncertain; it can't be changed.
+Save and approve the current version first.
+Save and approve the current version of the draft first. Edits need approval again.
+Open a workspace first.
+Choose a list first.
+Choose a contact first.
+Write the preference to remember.
+Enter a name.
+Map one column to “Name”.
+Provide the original text to replace, so others' changes aren't overwritten.
+Invalid header name.
+Request timed out
+Paste a link or text.
+Enter the full URL, e.g. https://admin.example.com/gcsp
+Choose Codex or Claude Code.
+Choose an SMTP account
+Choose a contact
+The path must be inside the workspace and can't access hidden files.
+The identity record returned no id after writing
+This person is no longer a list candidate.
+This person no longer matches the list and was skipped.
+This person has no address to record. Change their stage to Do not contact in the contact instead.
+This terminal isn't in this workspace.
+This source is syncing.
+This contact's stage is Do not contact; it can't be sent to.
+This identity has no candidate contact yet. Choose who to link it to.
+Options can't be empty.
+Mail must be recorded through the send action.
+Mail table missing
+Mail record missing
+Links must point inside the workspace.
+The linked file doesn't exist.
+Link points outside the workspace
+(empty)
+The file was changed elsewhere. Reopen the workspace before editing.
+General editing only supports Markdown under notes/ and campaigns/. Use the dedicated tools for contact dossiers and drafts.
+Choose a Markdown document in the workspace.
+The Slug is managed by the app and doesn't change on rename.
+This workspace is already open in another OutreachDex process. Close it there to continue.
+The saved sync position is no longer valid; the next sync starts from the beginning.
+This person isn't in the source, or was deleted.
+Missing source user
+No longer matches the list
+Requests without credentials are rejected
+The manifest can be read without credentials; if people and other endpoints are open too, add authentication
+events capability not declared; skipped
+No people available to check the detail endpoint
+Returns 400 invalid_cursor
+An unrecognized cursor should return 400 invalid_cursor, not normal data
+The last page returned no next_cursor, so clients must sync from the start every time
+The last page returned a next_cursor
+has_more is true but next_cursor did not advance; clients would repeat the same page forever
+Items are not in ascending update order; incremental sync may miss data
+Repeated requests for the first page return the same result
+Repeated requests for the first page return different results; use a stable sort order

@@ -1,0 +1,31 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "src-tauri"]
+default-members = ["crates/gc-core"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+publish = false
+
+[workspace.dependencies]
+gc-core = { path = "crates/gc-core" }
+table-sdk = { package = "kition-table-sdk", path = "../../KitionAI/kition-table/bindings/wasm" }
+note-sdk = { package = "kition-note-sdk", path = "../../KitionAI/kition-note/bindings/wasm" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+rusqlite = { version = "0.38", features = ["bundled", "hooks", "serde_json", "serialize"] }
+r2d2 = "0.8"
+r2d2_sqlite = "0.32"
+regex = "1"
+
+# Dependencies (table/note engines, CRDT, crypto) are optimized even in dev builds: the
+# debug app (`make dev`, `pnpm build:local`) otherwise spends seconds decoding tables.
+[profile.dev.package."*"]
+opt-level = 2

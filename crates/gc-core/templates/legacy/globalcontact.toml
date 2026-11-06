@@ -1,0 +1,25 @@
+# OutreachDex workspace configuration, generated for a workspace created before configuration
+# existed. The stage labels are the ones those versions wrote into contacts.ktable, so they stay
+# as they are; rename them here and in the table together if you like.
+# role: open = not contacted yet · waiting = sent, awaiting reply · active = replied / in progress · closed = on hold · suppressed = do not contact
+version = 1
+template = "legacy"
+
+stages = [
+  { label = "待调研", role = "open" },
+  { label = "待联系", role = "open" },
+  { label = "已发", role = "waiting" },
+  { label = "已回复", role = "active" },
+  { label = "进行中", role = "active" },
+  { label = "搁置", role = "closed" },
+  { label = "不再联系", role = "suppressed" },
+]
+
+[outreach]
+# Most list messages sent per day (including ones manually marked as sent).
+daily_limit = 20
+
+[contacts]
+# Choices for the project / outreach campaign, e.g. a paper or a joint project. More can be added in the table.
+campaigns = []
+summary_prompt = "Based on this contact's profile, summarize their research focus, recent situation, possible hooks and anything to keep in mind. Output a single paragraph only."

@@ -1,0 +1,31 @@
+[package]
+name = "gc-mail"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+gc-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+rusqlite.workspace = true
+gc-connect = { path = "../gc-connect" }
+gc-store = { path = "../gc-store" }
+gc-docs = { path = "../gc-docs" }
+table-sdk.workspace = true
+async-imap = { version = "0.10", default-features = false, features = ["runtime-tokio"] }
+chrono.workspace = true
+futures = "0.3"
+hex = "0.4"
+htmd = "0.2"
+lol_html = "2"
+mail-parser = "0.11"
+r2d2.workspace = true
+r2d2_sqlite.workspace = true
+regex.workspace = true
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-platform-verifier = "0.6"
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+sha2 = "0.10"
+tempfile = "3"
+tracing = "0.1"
+uuid.workspace = true

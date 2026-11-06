@@ -1,0 +1,21 @@
+# OutreachDex workspace configuration. A stage's role drives automatic behavior:
+# open = not contacted yet · waiting = sent, awaiting reply · active = replied / in progress · closed = on hold · suppressed = do not contact
+version = 1
+template = "blank"
+
+stages = [
+  { label = "To contact", role = "open" },
+  { label = "Sent", role = "waiting" },
+  { label = "Replied", role = "active" },
+  { label = "In progress", role = "active" },
+  { label = "On hold", role = "closed" },
+  { label = "Do not contact", role = "suppressed" },
+]
+
+[outreach]
+# Most list messages sent per day (including ones manually marked as sent).
+daily_limit = 20
+
+[contacts]
+campaigns = []
+summary_prompt = "Based on this contact's profile, summarize their recent situation, possible hooks and anything to keep in mind. Output a single paragraph only."

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://globalcontact.dev/spec/gcsp/v1/person.schema.json",
+  "title": "GCSP/1 person",
+  "type": "object",
+  "required": ["external_id", "updated_at"],
+  "properties": {
+    "external_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "deleted": { "type": "boolean" },
+    "locale": { "type": ["string", "null"], "description": "BCP 47 language the person uses, e.g. en-US or zh-CN. OutreachDex sets the contact's language from it." },
+    "reason": { "enum": ["opted_out"], "description": "Tombstones only. opted_out: the person asked not to be contacted; OutreachDex adds their addresses to its do-not-contact list." },
+    "display_name": { "type": ["string", "null"] },
+    "identities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "value"],
+        "properties": {
+          "kind": { "enum": ["email", "x", "github", "instagram", "wechat", "whatsapp", "tiktok", "facebook", "linkedin", "phone", "homepage", "other"] },
+          "value": { "type": "string", "minLength": 1 },
+          "verified": { "type": "boolean" }
+        }
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+    },
+    "url": { "type": ["string", "null"], "format": "uri" }
+  }
+}

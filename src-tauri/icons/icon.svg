@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- macOS icon grid: an 824×824 rounded square centred on the 1024 canvas. Glyph as in docs/images/logo.svg. -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#5b5bd6"/>
+  <g transform="translate(100 100) scale(12.875)">
+    <path d="M22 13h20a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H29l-9 8v-8.4A10 10 0 0 1 12 33V23a10 10 0 0 1 10-10z" fill="#fff"/>
+    <path d="M23 28h16m-6-6 6 6-6 6" fill="none" stroke="#5b5bd6" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

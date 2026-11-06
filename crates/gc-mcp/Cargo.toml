@@ -1,0 +1,7 @@
+[package]
+name = "gc-mcp"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+serde_json.workspace = true
+tokio.workspace = true

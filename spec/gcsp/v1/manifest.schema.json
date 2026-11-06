@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://globalcontact.dev/spec/gcsp/v1/manifest.schema.json",
+  "title": "GCSP/1 manifest",
+  "type": "object",
+  "required": ["protocol", "source", "capabilities"],
+  "properties": {
+    "protocol": { "const": "gcsp/1" },
+    "source": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,62}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "default_locale": { "type": ["string", "null"], "description": "BCP 47 language most of the source's people use, for people without a locale." },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "enum": ["people", "events", "person_detail"] },
+      "contains": { "const": "people" },
+      "uniqueItems": true
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,64}$" },
+          "label": { "type": "string" },
+          "type": { "enum": ["string", "number", "boolean", "datetime", "url"] },
+          "pii": { "type": "boolean" }
+        }
+      }
+    },
+    "event_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": { "type": { "type": "string" }, "label": { "type": "string" } }
+      }
+    }
+  }
+}
