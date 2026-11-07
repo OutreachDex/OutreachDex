@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { confirm } from "@tauri-apps/plugin-dialog";
-import { Icon, Tag } from "../components/ui";
+import { Icon, InstallHint, Tag } from "../components/ui";
 import { setPrefs, usePrefs } from "../app/prefs";
 import type { V } from "../app/domain";
 import { t, lang, languages, setLang, type Lang } from "../app/i18n";
@@ -111,6 +111,13 @@ export function SettingsPage({
             </Tag>
           ))}
         </div>
+        {["claude", "codex"]
+          .filter((kind) => agents[kind] && !agents[kind].available)
+          .map((kind) => (
+            <div className="setting-row" key={kind}>
+              <InstallHint agent={kind} />
+            </div>
+          ))}
         <div className="setting-row">
           <span className="lab">{t("Follow-up reminder")}</span>
           <input
@@ -138,25 +145,6 @@ export function SettingsPage({
                   onChange={(e) => setConfig({ ...config, terminal: { ...config.terminal, [kind]: e.target.value } })}
                 />
               </label>
-              <label>
-                {t("{kind} ACP program (table AI fields)", { kind })}
-                <input value={config[kind]?.program || ""} onChange={(e) => setConfig({ ...config, [kind]: { ...config[kind], program: e.target.value } })} />
-              </label>
-              <label className="span">
-                {t("Arguments (JSON array)")}
-                <input
-                  defaultValue={JSON.stringify(config[kind]?.args || [])}
-                  onBlur={(e) => {
-                    try {
-                      const args = JSON.parse(e.target.value);
-                      if (!Array.isArray(args) || args.some((a) => typeof a !== "string")) throw Error(t("Arguments must be an array of strings"));
-                      setConfig({ ...config, [kind]: { ...config[kind], args } });
-                    } catch (error) {
-                      fail(String(error));
-                    }
-                  }}
-                />
-              </label>
             </div>
           ))}
         </details>
@@ -164,7 +152,7 @@ export function SettingsPage({
           <button className="btn primary" onClick={save}>
             {t("Save settings")}
           </button>
-          <span className="faint small">{t("AI fields are generated in a tool-free Claude session.")}</span>
+          <span className="faint small">{t("Table AI fields use your Claude Code in a one-off session without tools.")}</span>
         </div>
       </section>
 

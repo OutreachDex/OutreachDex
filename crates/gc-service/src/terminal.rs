@@ -200,7 +200,7 @@ impl ChildKiller for Finished {
     }
 }
 
-fn cli_program(kind: &str, configured: Option<&str>) -> Option<PathBuf> {
+pub(crate) fn cli_program(kind: &str, configured: Option<&str>) -> Option<PathBuf> {
     if let Some(path) = configured.filter(|s| !s.trim().is_empty()) {
         return find_program(path);
     }
@@ -397,7 +397,6 @@ impl App {
                         .parent()
                         .unwrap_or(std::path::Path::new("/usr/bin"))
                         .to_owned(),
-                    self.resources.join("agents/node_modules/.bin"),
                     PathBuf::from("/opt/homebrew/bin"),
                     PathBuf::from("/usr/local/bin"),
                 ];

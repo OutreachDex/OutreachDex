@@ -3,7 +3,6 @@ name = "gc-service"
 version.workspace = true
 edition.workspace = true
 [dependencies]
-gc-agent = { path = "../gc-agent" }
 gc-mcp = { path = "../gc-mcp" }
 gc-connect = { path = "../gc-connect" }
 gc-mail = { path = "../gc-mail" }

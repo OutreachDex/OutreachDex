@@ -15,7 +15,6 @@ make install
 make               # run the desktop app in development mode (Ctrl+C to stop)
 make help          # list available targets
 pnpm build:local   # ad-hoc signed .app
-pnpm bundle:check  # verify the bundled Claude / Codex adapters start
 ```
 
 `scripts/prepare-kits.mjs` imports the editor artifacts and records each one's version, source revision and artifact hashes in `provenance.json`. Point it at other checkouts or builds with `KIT_TABLE_ROOT`, `KIT_TABLE_DIST`, `KIT_TABLE_BIN` and the matching `KIT_NOTE_*` variables.

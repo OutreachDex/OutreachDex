@@ -1,4 +1,3 @@
-AI fields require Claude ACP to be installed and signed in.
 The Agent can't edit an approved draft.
 The Agent can only change the summary, next action and stage.
 The Agent can only change the AI analysis and channel suggestions.
@@ -158,3 +157,5 @@ This doesn't look like a WhatsApp chat export. In WhatsApp, open the chat → Mo
 The export has no messages.
 The archive has no messages.csv. On LinkedIn, request your data with “Messages” selected.
 messages.csv has no FROM and DATE columns.
+AI fields need Claude Code. Install it and sign in, then try again.
+Claude Code didn't answer within 3 minutes.

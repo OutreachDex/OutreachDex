@@ -7,7 +7,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { SearchAddon } from "@xterm/addon-search";
 import "@xterm/xterm/css/xterm.css";
 import { TableEditor, saveEditors } from "../kits/TableEditor";
-import { Icon } from "./ui";
+import { Icon, InstallHint } from "./ui";
 import { useAgentPaneWidth } from "./useAgentPaneWidth";
 import { currentScheme, useScheme } from "../app/prefs";
 import { copyText } from "../app/clipboard";
@@ -780,9 +780,10 @@ export function AgentDock({
           </section>
         )}
         {missing && (
-          <p className="agent-inline-notice">
-            {t("{agent} CLI not found. Install it and sign in first, switch assistants in the session list, or set the path in Settings → Advanced.", { agent: names[agent] })}
-          </p>
+          <div className="agent-inline-notice">
+            <InstallHint agent={agent} />
+            <p className="faint">{t("Already installed somewhere else? Set its path in Settings → Advanced, or switch assistants in the session list.")}</p>
+          </div>
         )}
         {error && (
           <div role="alert" className="agent-inline-error">

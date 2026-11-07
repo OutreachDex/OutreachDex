@@ -2,7 +2,7 @@
 
 OutreachDex does not call model APIs. Analysis and drafting are done by the Claude Code or Codex the user already uses. Contact analysis, reply drafting, list preparation and reading the intent of incoming mail all happen in the global **Agent workspace**: like Orca, it runs the user's own CLI interactively in a real **PTY terminal**, keeps the raw terminal output, and the CLI reads and writes the workspace through the OutreachDex MCP server.
 
-ACP is used for one thing only: tool-free text generation for table AI fields (see [Table AI fields](#table-ai-fields-hostgenerate)). There is no ACP-based contact analysis, no background analysis queue and no automatic analysis.
+The app bundles neither assistant. When one isn't installed, the Agent pane and Settings show the vendor's install command and how to sign in. Besides the terminal, the user's Claude Code is used for one thing only: tool-free text generation for table AI fields (see [Table AI fields](#table-ai-fields-hostgenerate)). There is no background analysis queue and no automatic analysis.
 
 User-facing behavior is described in the help center: [Analysis and playbooks](help/04-analysis.md) and [Agent workspace](help/09-agent.md).
 
@@ -18,7 +18,7 @@ The sidebar button or ⌘ / Ctrl+J opens a fixed right-hand pane that takes part
 
 Documents open in the central area, the contact list stays on the left and the Agent terminal on the right; in a narrow window the panes stay side by side and the main navigation collapses to icons. The document list can be filtered; the terminal uses the standard xterm.js search add-on to find text in the scrollback. Session names, the chosen assistant and the last selection are stored in per-workspace local UI preferences; PTY output is persisted in SQLite. The connection state only means the CLI process is still running; task progress and permission prompts are shown by the terminal itself.
 
-- `portable-pty` starts the local `codex` / `claude`; the front end renders a real terminal with xterm.js, with IME input, ANSI and resizing. The interactive CLI and the ACP adapter are detected separately; when a CLI is not found, its path can be set in Settings.
+- `portable-pty` starts the local `codex` / `claude`; the front end renders a real terminal with xterm.js, with IME input, ANSI and resizing. The CLI is found in its configured path or the standard install locations (`PATH`, `~/.local/bin`, `~/.bun/bin`, nvm, Homebrew); when it is not found, the app shows how to install it, or its path can be set in Settings.
 - Codex is configured per process with `-c mcp_servers.globalcontact=…` and `env_vars`; Claude uses `--mcp-config`. The bridge token (`GC_MCP_ENDPOINT`, `GC_MCP_TOKEN`) is passed only through the child process environment, never written to a global MCP config or to command-line arguments. `GC_TERMINAL_SESSION` identifies the terminal session so that each MCP call is attributed to it. Codex runs with `--no-alt-screen` to keep scrollback and `--no-daemon` so the app owns the process lifetime, with the `workspace-write` sandbox and the `on-request` approval mode.
 - Output is written to the local SQLite tables `terminals` / `terminal_output` as ordered binary chunks, avoiding UTF-8 splits across frames and duplicate replays. The UI lists the latest 100 sessions and keeps 20,000 lines of screen scrollback; every received chunk stays in the local database. At most 6 terminals run at once. Quitting ends the processes; on the next launch old sessions are read-only logs, not resumed CLI processes. Start a new session and use the CLI's own resume feature if needed.
 - Document changes go MCP → the desktop workspace owner → gc-docs, which routes them to an open kit editor, or to the in-process SDK when no editor is open. `document.create` / `document.replace` can maintain `notes/` and `campaigns/`; dossiers are still only changed in agent-owned sections, and drafts still go through the draft tools.
@@ -39,7 +39,7 @@ Codex configuration follows the [official MCP documentation](https://developers.
 globalcontact (desktop app, owner of the open workspaces)
   ├─ gc-service::terminal  PTY sessions for codex / claude (portable-pty)
   ├─ gc-service::mcp       MCP tool catalog and execution (business tools + kit-table commands)
-  └─ gc-agent              ACP client, used only for tool-free AI field generation
+  └─ gc-service::agent     one-shot, tool-free `claude -p` for table AI fields
 globalcontact mcp --workspace <dir>   (stdio MCP server started by the CLI)
   └─ gc-mcp                forwards each request over a local socket to the desktop app,
                            authenticated with GC_MCP_TOKEN; no business logic of its own
@@ -90,6 +90,6 @@ The generic table tools can reorganize the whole contacts table, and the field r
 
 ## Table AI fields (`host/generate`)
 
-`AI summary` in the `contacts` table is a table AI field. When the user clicks "Run" in the editor, the kit sends `host/generate` (purpose `ai-field`) to the host, which forwards it to Claude ACP (its public session options support `tools: []`): a short session **with no MCP and no tools**, using the messages prepared by the kit as the prompt. The final text is returned to the kit, which then calls `ai.apply`. Built-in tools and project setting sources are disabled and permission requests are refused. This path exercises the table's `ai.prepare` / `ai.apply` and the editor's AI field UI.
+`AI summary` in the `contacts` table is a table AI field. When the user clicks "Run" in the editor, the kit sends `host/generate` (purpose `ai-field`) to the host, which runs the user's own Claude Code once in print mode, **with no tools, no MCP servers and no settings files** (`claude -p --output-format text --tools "" --strict-mcp-config --setting-sources "" --no-session-persistence --disable-slash-commands`), outside the workspace and with the messages prepared by the kit as the prompt. The final text is returned to the kit, which then calls `ai.apply`. Runs are serialized (one at a time) and time out after 3 minutes. This path exercises the table's `ai.prepare` / `ai.apply` and the editor's AI field UI.
 
-When Claude ACP is not available, the host does not declare the `generate` capability, and the editor hides the AI field's run button according to the table's rules.
+When Claude Code is not installed, the host does not declare the `generate` capability, and the editor hides the AI field's run button according to the table's rules.

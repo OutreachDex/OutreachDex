@@ -20,7 +20,6 @@ use tokio::{
 pub struct App {
     pub db: Db,
     pub secrets: SecretStore,
-    pub agents: gc_agent::Agents,
     pub terminals: crate::terminal::Terminals,
     pub notify: Notify,
     pub resources: PathBuf,
@@ -70,7 +69,6 @@ impl App {
         Ok(Self {
             db,
             secrets: SecretStore::with_key_path(data.join("secret.key")),
-            agents: Default::default(),
             terminals: Default::default(),
             notify,
             resources,
@@ -177,17 +175,6 @@ impl App {
         if !value.is_object() {
             value = json!({});
         }
-        for (kind, binary) in [("claude", "claude-agent-acp"), ("codex", "codex-acp")] {
-            if !value[kind].is_object() {
-                let bundled = self.resources.join("agents/node_modules/.bin").join(binary);
-                let program = if bundled.is_file() {
-                    bundled
-                } else {
-                    find_program(binary).unwrap_or_else(|| PathBuf::from(binary))
-                };
-                value[kind] = json!({"program":program,"args":[]});
-            }
-        }
         if value["defaultAgent"].is_null() {
             value["defaultAgent"] = json!("codex");
         }
@@ -196,12 +183,14 @@ impl App {
         }
         value
     }
+    /// The user's own Claude Code and Codex CLIs (the app bundles neither): the configured path,
+    /// or a standard install location.
     pub fn detect(&self) -> Value {
         let config = self.config();
         let mut result = json!({});
         for kind in ["claude", "codex"] {
-            let program = config[kind]["program"].as_str().unwrap_or("");
-            result[kind] = json!({"available":find_program(program).is_some(),"program":program});
+            let program = crate::terminal::cli_program(kind, config["terminal"][kind].as_str());
+            result[kind] = json!({"available":program.is_some(),"program":program});
         }
         result
     }
@@ -266,17 +255,6 @@ impl App {
             "settings.save" => {
                 self.setting_set("config", args)?;
                 return Ok(self.config());
-            }
-            "agent.permission" => {
-                self.agents.permission(
-                    text(&args, "id")?,
-                    args["option"].as_str().map(str::to_owned),
-                )?;
-                return Ok(json!({}));
-            }
-            "agent.cancel" => {
-                self.agents.cancel(text(&args, "id")?);
-                return Ok(json!({}));
             }
             "terminal.running" => return Ok(json!(self.terminals.running())),
             _ => {}

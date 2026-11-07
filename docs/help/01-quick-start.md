@@ -10,7 +10,7 @@ OutreachDex helps you build one-to-one relationships with every person who matte
    - **Product user relationships**: understand your product users' goals and feedback, and follow up on issues.
 2. **Add contacts**: on the **People** page click "New contact", or use "Import" to bring in a list from CSV / a spreadsheet (see [Import contacts](11-import.md)).
 3. **Connect mail** (optional): in **Settings → Mail accounts**, add incoming (IMAP) and outgoing (SMTP) accounts. Incoming mail is filed under the matching contact automatically.
-4. **Set up the Agent** (optional): analysis and drafting use the Claude Code or Codex you are already signed in to on this computer. Sign in to them in a terminal before first use.
+4. **Set up the Agent** (optional): analysis and drafting use the Claude Code or Codex you are already signed in to on this computer. Sign in to them in a terminal before first use. OutreachDex doesn't include either one: if neither is installed, the Agent pane and **Settings → Assistant** show the command to install it.
 
 ## Everyday use
 

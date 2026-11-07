@@ -9,7 +9,6 @@ export PATH := $(GC_CARGO_BIN):$(PATH)
 .PHONY: dev start install check-toolchain help
 
 dev start: check-toolchain
-	$(PNPM) agents:prepare
 	$(PNPM) dev
 
 check-toolchain:

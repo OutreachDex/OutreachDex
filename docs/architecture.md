@@ -25,7 +25,6 @@ Out of scope: mass-mail sequences, mailbox warm-up, automated scraping of X or I
 │  gc-connect   SMTP, proxies and the encryption key for secrets                  │
 │  gc-source    GCSP/1 client and conformance checker                             │
 │  gc-store     the app's own SQLite (connections, sync state, terminals, …)      │
-│  gc-agent     ACP client, used only for tool-free table AI field generation     │
 │  table-sdk / note-sdk   TableDocument / NoteDocument in process                 │
 └─────────────────────────────────────────────────────────────────────────────────┘
         │ PTY (portable-pty)
@@ -61,7 +60,7 @@ Out of scope: mass-mail sequences, mailbox warm-up, automated scraping of X or I
   Routing: while a `.ktable` is open in an editor, host writes are sent to that editor through `ai/run` (the user sees them immediately and there is only one copy of the document); otherwise they go to the in-process `TableDocument` and are written back to the file atomically. gc-docs only does this registration and routing. It does not parse tables or wrap them in another API; requests and results are the table's own `{ result, change }`.
 - kit.note works the same way: structured edits to dossiers, drafts and documents (property blocks, section replacement) use the in-process `NoteDocument`, and people edit in the `kit.note` iframe.
 - Incompatibilities found in the table or note component are fixed in that component, not worked around here.
-- **No model calls in this app.** Analysis and drafting run in the user's own interactive CLI (their own Claude or Codex account). `host/generate` from table AI fields is forwarded to a tool-free Claude ACP session (see [agent-bridge.md](agent-bridge.md#table-ai-fields-hostgenerate)).
+- **No model calls in this app.** Analysis and drafting run in the user's own interactive CLI (their own Claude or Codex account). `host/generate` from table AI fields runs the user's Claude Code once without tools (see [agent-bridge.md](agent-bridge.md#table-ai-fields-hostgenerate)). The app bundles neither assistant.
 - Host writes to the table always carry an origin `system:<feature>` (such as `system:emailsync` or `system:agent`) and never enter the user's undo history.
 
 ## Repository layout
@@ -77,9 +76,8 @@ globalcontact/
 │  ├─ gc-mail/                IMAP sync
 │  ├─ gc-connect/             SMTP, proxies, secrets
 │  ├─ gc-source/              GCSP/1 client and checker
-│  ├─ gc-agent/               ACP client (AI fields only)
 │  └─ gc-mcp/                 stdio MCP endpoint (`globalcontact mcp`)
-├─ src-tauri/                 gc-app: Tauri entry point and commands; bundles kit binaries and agent adapters
+├─ src-tauri/                 gc-app: Tauri entry point and commands; bundles the kit binaries
 ├─ web/                       React + Tailwind + Vite
 │  └─ src/
 │     ├─ app/                 shell, sidebar, i18n, shared client code
@@ -88,7 +86,7 @@ globalcontact/
 │     ├─ kits/                mounts kit.table / kit.note (kit-host)
 │     └─ locales/             UI translations
 ├─ spec/gcsp/v1/              GCSP/1 JSON Schemas
-├─ scripts/                   kit and agent preparation, GCSP mock backend, checks
+├─ scripts/                   kit preparation, CI helpers, GCSP mock backend, checks
 └─ docs/                      protocol, architecture, data model, help center
 ```
 
@@ -97,15 +95,13 @@ globalcontact/
 | Dependency | Purpose | How it is obtained |
 |---|---|---|
 | Table and note components | Rust: `table-sdk`, `note-sdk`, `kit-host`; binaries: headless `kit-table`, `kit-note`; front end: the `kit.table` / `kit.note` editors, `kit-host`, `kit-protocol` | Not published yet. Located as sibling directories through Cargo path and pnpm `link:` dependencies; prebuilt artifacts are imported by `scripts/prepare-kits.mjs`, which records version, source revision and hashes in `provenance.json` |
-| `@agentclientprotocol/claude-agent-acp` | Claude ACP adapter for table AI fields | npm; bundled by `scripts/prepare-agents.mjs` |
-| `@agentclientprotocol/codex-acp` | Codex ACP adapter | Same |
-| Claude Code / Codex CLI | Interactive Agent terminals | Installed and signed in by the user |
+| Claude Code / Codex CLI | Interactive Agent terminals; Claude Code also generates table AI fields | Installed and signed in by the user; not bundled. The app shows the install command when one is missing |
 
-When packaging, `src-tauri` includes the `kit-table` and `kit-note` binaries, the editors' `dist` and the agent adapters as resources.
+When packaging, `src-tauri` includes the `kit-table` and `kit-note` binaries and the editors' `dist` as resources.
 
 ## Main Rust dependencies
 
-`tauri 2`, `tokio`, `rusqlite` (bundled), `r2d2_sqlite`, `async-imap`, `mail-parser`, `rustls`, `aes-gcm`, `agent-client-protocol`, `portable-pty`, `serde`, `tracing`.
+`tauri 2`, `tokio`, `rusqlite` (bundled), `r2d2_sqlite`, `async-imap`, `mail-parser`, `rustls`, `aes-gcm`, `portable-pty`, `serde`, `tracing`.
 
 ## Security
 

@@ -2126,6 +2126,27 @@ fieldset {
   border-radius: var(--r-md);
   padding: 7px 9px;
 }
+.install-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-xs);
+}
+.install-command {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.install-command code {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-family: var(--mono);
+  background: var(--bg-active);
+  border-radius: var(--r-sm);
+  padding: 4px 6px;
+}
 .agent-inline-error {
   display: flex;
   gap: 8px;

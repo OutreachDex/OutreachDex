@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { t } from "../app/i18n";
+import { copyText } from "../app/clipboard";
 
 const paths: Record<string, string> = {
   edit: "M12 20h9 M16 3l5 5-12 12H4v-5z",
@@ -273,6 +274,50 @@ export function Modal({
         <div className="modal-body">{children}</div>
         {footer && <footer className="modal-foot">{footer}</footer>}
       </section>
+    </div>
+  );
+}
+
+/** The assistants the app works with; neither is bundled. Commands from each vendor's install docs. */
+const ASSISTANTS: Record<string, { name: string; install: string; signIn: string }> = {
+  claude: { name: "Claude Code", install: "curl -fsSL https://claude.ai/install.sh | bash", signIn: "claude" },
+  codex: { name: "Codex", install: "curl -fsSL https://chatgpt.com/codex/install.sh | sh", signIn: "codex" },
+};
+
+/** How to install a missing assistant: the official command to run in Terminal, then sign in. */
+export function InstallHint({ agent }: { agent: string }) {
+  const [copied, setCopied] = useState(false);
+  const code = useRef<HTMLElement>(null);
+  const info = ASSISTANTS[agent];
+  if (!info) return null;
+  // If the clipboard is unavailable, select the command so ⌘C copies it.
+  const selectCommand = () => {
+    const range = document.createRange();
+    if (!code.current) return;
+    range.selectNodeContents(code.current);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+  };
+  return (
+    <div className="install-hint">
+      <span>{t("{name} isn't installed. Run this in Terminal, then run “{command}” once to sign in:", { name: info.name, command: info.signIn })}</span>
+      <span className="install-command">
+        <code ref={code}>{info.install}</code>
+        <button
+          className="btn ghost"
+          onClick={() =>
+            void copyText(info.install).then(
+              () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              },
+              selectCommand,
+            )
+          }
+        >
+          {copied ? t("Copied") : t("Copy")}
+        </button>
+      </span>
     </div>
   );
 }
