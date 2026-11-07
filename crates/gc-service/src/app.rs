@@ -143,6 +143,27 @@ impl App {
         self.setting_set("last_workspace", json!(root))?;
         Ok(json!({"root":root}))
     }
+    /// The workspace used when none was chosen: `<home>/Documents/OutreachDex`, created (blank
+    /// template) on first launch. A folder of that name that isn't a workspace is left alone and
+    /// `OutreachDex 2`, `OutreachDex 3`… is used instead.
+    pub fn open_default(&self, home: &Path) -> Result<Value, String> {
+        let documents = home.join("Documents");
+        for n in 1..=20 {
+            let path = documents.join(if n == 1 { "OutreachDex".to_owned() } else { format!("OutreachDex {n}") });
+            if path.join("contacts.ktable").is_file() {
+                return self.open_with(&path, false, None);
+            }
+            // Missing, or holding only hidden files such as .DS_Store.
+            let unused = match std::fs::read_dir(&path) {
+                Ok(entries) => entries.flatten().all(|e| e.file_name().to_string_lossy().starts_with('.')),
+                Err(e) => e.kind() == std::io::ErrorKind::NotFound,
+            };
+            if unused {
+                return self.open_with(&path, true, None);
+            }
+        }
+        Err("Couldn't find a free folder for the default workspace in Documents.".into())
+    }
     pub fn service(&self, root: &str) -> Result<Service, String> {
         self.services
             .lock()

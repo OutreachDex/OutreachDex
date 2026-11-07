@@ -1026,5 +1026,17 @@
   "Already installed somewhere else? Set its path in Settings → Advanced, or switch assistants in the session list.": "已经装在别的位置？可以在“设置 → 高级”里填写路径，或在会话列表里切换助手。",
   "Table AI fields use your Claude Code in a one-off session without tools.": "表格的 AI 字段会用你的 Claude Code 单次生成，不使用任何工具。",
   "AI fields need Claude Code. Install it and sign in, then try again.": "AI 字段需要 Claude Code。请先安装并登录，然后再试。",
-  "Claude Code didn't answer within 3 minutes.": "Claude Code 在 3 分钟内没有响应。"
+  "Claude Code didn't answer within 3 minutes.": "Claude Code 在 3 分钟内没有响应。",
+  "OutreachDex {version} is installed. Restart to use it.": "OutreachDex {version} 已安装，重启后生效。",
+  "Restart to update": "重启以完成更新",
+  "Restarting…": "正在重启…",
+  "Updates": "更新",
+  "New versions are downloaded and installed automatically in the background; restart OutreachDex to start using them.": "新版本会在后台自动下载安装，重启 OutreachDex 后生效。",
+  "Version": "版本",
+  "{version} ready · restart to update": "{version} 已就绪 · 重启即可更新",
+  "Checking for updates…": "正在检查更新…",
+  "OutreachDex is up to date.": "OutreachDex 已是最新版本。",
+  "Check for updates": "检查更新",
+  "Couldn't find a free folder for the default workspace in Documents.": "在“文稿”里找不到可用来创建默认工作区的空文件夹。",
+  "The home folder isn't known.": "找不到用户主目录。"
 }

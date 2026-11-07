@@ -1,10 +1,10 @@
 # Quick start
 
-OutreachDex helps you build one-to-one relationships with every person who matters: understand them, prepare a tailored message, send it after you review it, and keep following up. All data lives in a **workspace folder** that you choose.
+OutreachDex helps you build one-to-one relationships with every person who matters: understand them, prepare a tailored message, send it after you review it, and keep following up. All data lives in a **workspace folder** on your computer; the first one is created for you.
 
 ## First use
 
-1. **Create a workspace**: click the workspace name in the top-left → New workspace…, pick a template, then choose an empty folder.
+1. **Your workspace**: on first launch OutreachDex creates one in **Documents → OutreachDex** (Blank template) and opens it, so you can start right away. For another template or folder, click the workspace name in the top-left → New workspace… or Open workspace…. Templates:
    - **Blank**: general stages, suitable for any one-to-one outreach.
    - **Expert outreach**: research, first contact and follow-up with academics or industry experts.
    - **Product user relationships**: understand your product users' goals and feedback, and follow up on issues.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { Icon, InstallHint, Tag } from "../components/ui";
+import { appVersion, installUpdate } from "../app/updates";
 import { setPrefs, usePrefs } from "../app/prefs";
 import type { V } from "../app/domain";
 import { t, lang, languages, setLang, type Lang } from "../app/i18n";
@@ -20,6 +21,9 @@ export function SettingsPage({
   refresh,
   save,
   fail,
+  update,
+  updateFound,
+  notify,
 }: {
   root: string;
   config: V;
@@ -31,6 +35,10 @@ export function SettingsPage({
   refresh: () => void;
   save: () => void;
   fail: (message: string) => void;
+  /** A downloaded update waiting for a restart. */
+  update: string;
+  updateFound: (version: string) => void;
+  notify: (message: string) => void;
 }) {
   const prefs = usePrefs();
   return (
@@ -155,6 +163,8 @@ export function SettingsPage({
           <span className="faint small">{t("Table AI fields use your Claude Code in a one-off session without tools.")}</span>
         </div>
       </section>
+
+      <Updates update={update} work={work} found={updateFound} notify={notify} />
 
       {root && <Preferences key={`p-${root}`} call={call} work={work} />}
 
@@ -398,6 +408,42 @@ function MailSettings({ accounts, call, work, refresh }: { accounts: V; call: Ca
           {editing ? t("Update connection") : t("Save connection")}
         </button>
         {result && <span className="muted prewrap">{result}</span>}
+      </div>
+    </section>
+  );
+}
+
+/** The running version and a manual check; updates otherwise install automatically. */
+function Updates({ update, work, found, notify }: { update: string; work: Work; found: (version: string) => void; notify: (message: string) => void }) {
+  const [version, setVersion] = useState("");
+  useEffect(() => {
+    void appVersion().then(setVersion, () => undefined);
+  }, []);
+  return (
+    <section className="settings-section">
+      <header>
+        <h2>{t("Updates")}</h2>
+        <p>{t("New versions are downloaded and installed automatically in the background; restart OutreachDex to start using them.")}</p>
+      </header>
+      <div className="setting-row">
+        <span className="lab">{t("Version")}</span>
+        <span>{version || "—"}</span>
+        {update ? (
+          <Tag tone="green">{t("{version} ready · restart to update", { version: update })}</Tag>
+        ) : (
+          <button
+            className="btn"
+            onClick={() =>
+              void work(t("Checking for updates…"), async () => {
+                const next = await installUpdate();
+                if (next) found(next);
+                notify(next ? t("OutreachDex {version} is installed. Restart to use it.", { version: next }) : t("OutreachDex is up to date."));
+              })
+            }
+          >
+            {t("Check for updates")}
+          </button>
+        )}
       </div>
     </section>
   );

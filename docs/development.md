@@ -32,7 +32,7 @@ Browser tests replace only the Tauri IPC and system dialogs; files, services and
 
 ## Release builds
 
-`.github/workflows/release.yml` builds signed, notarized DMGs for Apple Silicon and Intel. Run it from the Actions tab to get the DMGs as run artifacts, or push a tag `vX.Y.Z` matching the version in `src-tauri/tauri.conf.json` to attach them to a draft release. CI fetches the editor components at the revisions pinned in `scripts/editor-revs.txt`; bump those to ship newer editors. The required secrets are listed at the top of the workflow.
+`.github/workflows/release.yml` builds signed, notarized DMGs for Apple Silicon and Intel. Run it from the Actions tab to get the DMGs as run artifacts, or push a tag `vX.Y.Z` matching the version in `src-tauri/tauri.conf.json` to attach them to a draft release. A tag build also signs an update archive per architecture and writes `latest.json`; installed apps read it from `releases/latest/download/`, so an update is offered once the release is published (the updater key is described at the top of the workflow). CI fetches the editor components at the revisions pinned in `scripts/editor-revs.txt`; bump those to ship newer editors. The required secrets are listed at the top of the workflow.
 
 ## Technical documents
 

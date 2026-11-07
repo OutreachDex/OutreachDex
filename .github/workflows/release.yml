@@ -12,6 +12,9 @@
 #   APPLE_API_ISSUER         App Store Connect API: Issuer ID
 #   APPLE_API_KEY_ID         App Store Connect API: Key ID
 #   APPLE_API_KEY_P8         App Store Connect API: contents of AuthKey_<Key ID>.p8
+#   TAURI_SIGNING_PRIVATE_KEY, TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+#                            updater key; signs the update archives that installed apps download
+#                            (its public key is plugins.updater.pubkey in tauri.conf.json)
 name: Release
 
 on:
@@ -144,12 +147,14 @@ jobs:
           # Tauri notarizes and staples the .app when these are set (and APPLE_API_KEY_PATH above).
           APPLE_API_ISSUER: ${{ env.NOTARIZE == 'true' && secrets.APPLE_API_ISSUER || '' }}
           APPLE_API_KEY: ${{ env.NOTARIZE == 'true' && secrets.APPLE_API_KEY_ID || '' }}
+          # Signs the update archive (OutreachDex.app.tar.gz) for the auto-updater.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
-          if [ -n "${MACOS_SIGNING_IDENTITY:-}" ]; then
-            pnpm exec tauri build --bundles app,dmg --config "{\"bundle\":{\"macOS\":{\"signingIdentity\":\"$MACOS_SIGNING_IDENTITY\"}}}"
-          else
-            pnpm exec tauri build --bundles app,dmg
-          fi
+          updater=$([ -n "$TAURI_SIGNING_PRIVATE_KEY" ] && echo true || echo false)
+          config=$(jq -nc --arg identity "${MACOS_SIGNING_IDENTITY:--}" --argjson updater "$updater" \
+            '{bundle: {createUpdaterArtifacts: $updater, macOS: {signingIdentity: $identity}}}')
+          pnpm exec tauri build --bundles app,dmg --config "$config"
 
       - name: Notarize DMG
         if: env.NOTARIZE == 'true'
@@ -187,10 +192,24 @@ jobs:
             done
           fi
 
+      - name: Collect release files
+        working-directory: src/OutreachDex
+        run: |
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          mkdir -p dist
+          cp target/release/bundle/dmg/*.dmg dist/
+          # The update archive holds the signed, notarized and stapled .app.
+          archive=target/release/bundle/macos/OutreachDex.app.tar.gz
+          if [ -f "$archive" ]; then
+            cp "$archive" "dist/OutreachDex_${version}_${{ matrix.arch }}.app.tar.gz"
+            cp "$archive.sig" "dist/OutreachDex_${version}_${{ matrix.arch }}.app.tar.gz.sig"
+          fi
+          ls -la dist
+
       - uses: actions/upload-artifact@v4
         with:
           name: OutreachDex-macos-${{ matrix.arch }}
-          path: src/OutreachDex/target/release/bundle/dmg/*.dmg
+          path: src/OutreachDex/dist/*
           if-no-files-found: error
 
       - name: Remove signing material
@@ -212,8 +231,27 @@ jobs:
           pattern: OutreachDex-macos-*
           merge-multiple: true
           path: dist
+      - name: Write the updater manifest
+        run: |
+          # latest.json is read by installed apps from releases/latest/download/, so updates are
+          # offered only once this release is published.
+          version=${GITHUB_REF_NAME#v}
+          base="https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME"
+          files=()
+          for arch in aarch64 x86_64; do
+            archive="OutreachDex_${version}_${arch}.app.tar.gz"
+            [ -f "dist/$archive" ] && [ -f "dist/$archive.sig" ] || { echo "No update archive for $arch; latest.json not written"; exit 0; }
+            files+=("$arch" "$base/$archive" "$(cat "dist/$archive.sig")")
+          done
+          jq -n --arg version "$version" --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg arm_url "${files[1]}" --arg arm_sig "${files[2]}" --arg x64_url "${files[4]}" --arg x64_sig "${files[5]}" \
+            '{version: $version, pub_date: $date, notes: "",
+              platforms: {"darwin-aarch64": {url: $arm_url, signature: $arm_sig},
+                          "darwin-x86_64": {url: $x64_url, signature: $x64_sig}}}' > dist/latest.json
+          cat dist/latest.json
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/*.dmg --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "OutreachDex ${GITHUB_REF_NAME#v}"
+          shopt -s nullglob
+          gh release create "$GITHUB_REF_NAME" dist/*.dmg dist/*.app.tar.gz dist/latest*.json --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "OutreachDex ${GITHUB_REF_NAME#v}"

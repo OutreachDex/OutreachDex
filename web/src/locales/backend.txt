@@ -159,3 +159,5 @@ The archive has no messages.csv. On LinkedIn, request your data with “Messages
 messages.csv has no FROM and DATE columns.
 AI fields need Claude Code. Install it and sign in, then try again.
 Claude Code didn't answer within 3 minutes.
+Couldn't find a free folder for the default workspace in Documents.
+The home folder isn't known.

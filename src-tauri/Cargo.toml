@@ -20,6 +20,8 @@ serde.workspace = true
 serde_json.workspace = true
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 gc-service = { path = "../crates/gc-service" }
 gc-mcp = { path = "../crates/gc-mcp" }
 tokio.workspace = true

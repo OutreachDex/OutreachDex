@@ -22,6 +22,7 @@ import { MergeDialog } from "../components/MergeDialog";
 import { CommandPalette, type Command } from "../components/CommandPalette";
 import { setPrefs, currentScheme } from "./prefs";
 import { copyText } from "./clipboard";
+import { installUpdate, restartApp } from "./updates";
 import { t } from "./i18n";
 import { awaitsReply, matches, needsFollowUp, setWorkspace, type Row, type V, type WorkspaceInfo } from "./domain";
 
@@ -69,6 +70,7 @@ export function App() {
     [creating, setCreating] = useState(false),
     [importPreview, setImportPreview] = useState<V | null>(null),
     [importChooser, setImportChooser] = useState(false),
+    [updateReady, setUpdateReady] = useState(""),
     [chatImport, setChatImport] = useState<{ kind: string; path: string; preview: V } | null>(null),
     [, setWorkspaceInfo] = useState<WorkspaceInfo | null>(null);
   const [agentOpen, setAgentOpen] = useState(() => localStorage.getItem(agentOpenKey) !== "0");
@@ -169,12 +171,39 @@ export function App() {
         setConfig(data.config);
         setAgents(data.agents);
         setTemplates(data.templates || []);
+        // The last workspace, or the default one (created on first launch), so nobody has to
+        // pick a folder before starting. A workspace open in another window is not replaced.
+        let info: V | null = null;
         if (data.lastWorkspace) {
-          const info = await invoke<V>("workspace_open", { path: data.lastWorkspace, create: false });
-          setRoot(info.root);
+          try {
+            info = await invoke<V>("workspace_open", { path: data.lastWorkspace, create: false });
+          } catch (e) {
+            if (String(e).includes("already open")) throw e;
+          }
         }
+        info ??= await invoke<V>("workspace_open_default").catch(() => null);
+        if (info) setRoot(info.root);
       })
       .catch((e) => fail(String(e)));
+  }, []);
+  // Automatic updates: shortly after launch, then every 6 hours, a newer signed release is
+  // downloaded and installed in the background; it takes effect on the next restart.
+  const updateFound = useRef("");
+  useEffect(() => {
+    const run = () => {
+      if (updateFound.current) return;
+      void installUpdate()
+        .then((version) => {
+          if (version) setUpdateReady((updateFound.current = version));
+        })
+        .catch(() => undefined); // offline, or no release to check yet: try again later
+    };
+    const first = setTimeout(run, 15000);
+    const timer = setInterval(run, 6 * 60 * 60 * 1000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
   }, []);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -533,6 +562,13 @@ export function App() {
         toggleAgent={() => setAgentOpen((o) => !o)}
         choose={(create) => void choose(create)}
         openSearch={() => setPalette(true)}
+        update={updateReady}
+        restart={() =>
+          void work(t("Restarting…"), async () => {
+            await saveEditors();
+            await restartApp();
+          })
+        }
       />
       <section className="main">
         <header className="topbar">
@@ -915,6 +951,9 @@ export function App() {
               work={work}
               refresh={refresh}
               fail={fail}
+              update={updateReady}
+              updateFound={(version) => setUpdateReady((updateFound.current = version))}
+              notify={setNotice}
               save={() =>
                 void work(t("Saving settings…"), async () => {
                   await call("settings.save", config);

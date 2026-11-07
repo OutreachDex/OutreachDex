@@ -40,5 +40,13 @@
       "minimumSystemVersion": "12.0",
       "signingIdentity": "-"
     }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk1RDdCRjc3RTVGQjY3MTIKUldRU1ovdmxkNy9YbFJHd2tqVkFMY0V0WS9QdUNKRVU5WFl4Rkx4SXlvQXFnYlRZTlZ1U25RWmoK",
+      "endpoints": [
+        "https://github.com/OutreachDex/OutreachDex/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

@@ -1022,5 +1022,17 @@
   "Already installed somewhere else? Set its path in Settings → Advanced, or switch assistants in the session list.": "別の場所にインストール済みですか？「設定 → 詳細」でパスを指定するか、セッション一覧でアシスタントを切り替えてください。",
   "Table AI fields use your Claude Code in a one-off session without tools.": "表の AI 項目は、あなたの Claude Code をツールなしの単発セッションで使って生成します。",
   "AI fields need Claude Code. Install it and sign in, then try again.": "AI 項目には Claude Code が必要です。インストールしてサインインしてから、もう一度お試しください。",
-  "Claude Code didn't answer within 3 minutes.": "Claude Code が 3 分以内に応答しませんでした。"
+  "Claude Code didn't answer within 3 minutes.": "Claude Code が 3 分以内に応答しませんでした。",
+  "OutreachDex {version} is installed. Restart to use it.": "OutreachDex {version} をインストールしました。再起動すると使えます。",
+  "Restart to update": "再起動してアップデート",
+  "Restarting…": "再起動しています…",
+  "Updates": "アップデート",
+  "New versions are downloaded and installed automatically in the background; restart OutreachDex to start using them.": "新しいバージョンはバックグラウンドで自動的にダウンロード・インストールされます。OutreachDex を再起動すると使えます。",
+  "Version": "バージョン",
+  "{version} ready · restart to update": "{version} の準備完了 · 再起動でアップデート",
+  "Checking for updates…": "アップデートを確認しています…",
+  "OutreachDex is up to date.": "OutreachDex は最新です。",
+  "Check for updates": "アップデートを確認",
+  "Couldn't find a free folder for the default workspace in Documents.": "「書類」に既定のワークスペース用の空きフォルダが見つかりませんでした。",
+  "The home folder isn't known.": "ホームフォルダが見つかりません。"
 }

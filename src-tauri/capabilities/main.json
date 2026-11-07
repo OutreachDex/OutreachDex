@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Main window file pickers, confirmations and close handling.",
+  "description": "Main window file pickers, confirmations, close handling and app updates.",
   "windows": [
     "main"
   ],
@@ -10,6 +10,8 @@
     "core:window:allow-destroy",
     "dialog:allow-open",
     "dialog:allow-save",
-    "dialog:allow-message"
+    "dialog:allow-message",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

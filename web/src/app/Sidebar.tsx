@@ -23,6 +23,8 @@ export function Sidebar({
   toggleAgent,
   choose,
   openSearch,
+  update,
+  restart,
 }: {
   root: string;
   view: View;
@@ -34,6 +36,9 @@ export function Sidebar({
   toggleAgent: () => void;
   choose: (create: boolean) => void;
   openSearch: () => void;
+  /** A downloaded update waiting for a restart. */
+  update: string;
+  restart: () => void;
 }) {
   const menu = useRef<HTMLDetailsElement>(null);
   const scheme = useScheme();
@@ -112,6 +117,12 @@ export function Sidebar({
         })}
       </nav>
       <div className="side-foot">
+        {update && (
+          <button className="nav update" disabled={busy} onClick={restart} title={t("OutreachDex {version} is installed. Restart to use it.", { version: update })}>
+            <Icon name="refresh" />
+            <span className="nav-label">{t("Restart to update")}</span>
+          </button>
+        )}
         {root && (
           <button className={`nav ${agentOpen ? "on" : ""}`} onClick={toggleAgent} title="Agent · ⌘ / Ctrl+J">
             <Icon name="terminal" />

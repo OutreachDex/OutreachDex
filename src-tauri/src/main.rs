@@ -16,6 +16,12 @@ fn workspace_open(
 ) -> Result<Value, String> {
     state.open_with(Path::new(&path), create, template.as_deref())
 }
+/// Opens (or on first launch creates) the default workspace, `~/Documents/OutreachDex`.
+#[tauri::command]
+fn workspace_open_default(state: State<'_, App>) -> Result<Value, String> {
+    let home = std::env::var_os("HOME").map(PathBuf::from).ok_or("The home folder isn't known.")?;
+    state.open_default(&home)
+}
 /// Writes text to the system clipboard. The WebView's navigator.clipboard is refused by the
 /// platform outside a direct user gesture, so copies go through the host.
 #[tauri::command]
@@ -268,6 +274,8 @@ fn main() {
     }
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(move |app| {
             let handle = app.handle().clone();
             let notify = Arc::new(move |event: &str, value: Value| {
@@ -313,6 +321,7 @@ fn main() {
             resolve_link,
             open_external,
             workspace_open,
+            workspace_open_default,
             clipboard_write,
             app_call,
             file_read,
