@@ -17,7 +17,7 @@ import { SourcesPage } from "../pages/SourcesPage";
 import { ListsPage } from "../pages/ListsPage";
 import { HelpPage } from "../pages/HelpPage";
 import { Sidebar } from "./Sidebar";
-import { ImportDialog, TemplatePicker, type Template } from "../components/WorkspaceDialogs";
+import { ChatImportDialog, ImportChooser, ImportDialog, TemplatePicker, type ImportKind, type Template } from "../components/WorkspaceDialogs";
 import { MergeDialog } from "../components/MergeDialog";
 import { CommandPalette, type Command } from "../components/CommandPalette";
 import { setPrefs, currentScheme } from "./prefs";
@@ -68,6 +68,8 @@ export function App() {
   const [templates, setTemplates] = useState<Template[]>([]),
     [creating, setCreating] = useState(false),
     [importPreview, setImportPreview] = useState<V | null>(null),
+    [importChooser, setImportChooser] = useState(false),
+    [chatImport, setChatImport] = useState<{ kind: string; path: string; preview: V } | null>(null),
     [, setWorkspaceInfo] = useState<WorkspaceInfo | null>(null);
   const [agentOpen, setAgentOpen] = useState(() => localStorage.getItem(agentOpenKey) !== "0");
   const [agentDocument, setAgentDocument] = useState("");
@@ -337,6 +339,21 @@ export function App() {
       if (typeof path !== "string") return;
       setImportPreview({ ...(await call<V>("import.preview", { path })), path });
     });
+  const startChatImport = (kind: "whatsapp" | "linkedin") =>
+    work(t("Reading file…"), async () => {
+      const path = await open({
+        multiple: false,
+        title: kind === "whatsapp" ? t("Choose a WhatsApp chat export") : t("Choose your LinkedIn data archive"),
+        filters: [kind === "whatsapp" ? { name: "WhatsApp", extensions: ["zip", "txt"] } : { name: "LinkedIn", extensions: ["zip", "csv"] }],
+      });
+      if (typeof path !== "string") return;
+      setChatImport({ kind, path, preview: await call<V>("chat.preview", { kind, path }) });
+    });
+  const chooseImport = (kind: ImportKind) => {
+    setImportChooser(false);
+    if (kind === "contacts") void startImport();
+    else void startChatImport(kind);
+  };
   const navigate = (next: View) =>
     work(t("Saving…"), async () => {
       await saveEditors();
@@ -683,7 +700,7 @@ export function App() {
               busy={!!busy}
               open={(slug) => void openPerson(slug)}
               create={() => setNewContact(true)}
-              importFile={() => void startImport()}
+              importFile={() => setImportChooser(true)}
               bulkStage={(slugs, stage) =>
                 work(t("Changing stage for {n} people…", { n: slugs.length }), async () => {
                   await call("contact.bulk_update", { slugs, values: { Stage: stage } });
@@ -956,6 +973,8 @@ export function App() {
           actions={[
             { id: "a:new", group: t("Actions"), title: t("New contact"), icon: "plus", run: () => void navigate("people").then(() => setNewContact(true)) },
             { id: "a:import", group: t("Actions"), title: t("Import contacts (CSV / TSV)"), icon: "inbox", run: () => void startImport() },
+            { id: "a:import-whatsapp", group: t("Actions"), title: t("Import a WhatsApp chat"), icon: "inbox", run: () => void startChatImport("whatsapp") },
+            { id: "a:import-linkedin", group: t("Actions"), title: t("Import LinkedIn messages"), icon: "inbox", run: () => void startChatImport("linkedin") },
             { id: "a:workspace", group: t("Actions"), title: t("New workspace…"), icon: "folder", run: () => void choose(true) },
             {
               id: "a:theme",
@@ -1009,6 +1028,37 @@ export function App() {
           busy={!!busy}
           close={() => setCreating(false)}
           pick={(id) => void choose(true, id)}
+        />
+      )}
+      {importChooser && <ImportChooser close={() => setImportChooser(false)} pick={chooseImport} />}
+      {chatImport && (
+        <ChatImportDialog
+          preview={chatImport.preview}
+          contacts={rows.map((r) => ({ slug: r.values.Slug, name: r.values.Name || r.values.Slug })).sort((a, b) => a.name.localeCompare(b.name))}
+          busy={busy}
+          close={() => setChatImport(null)}
+          reload={(options) =>
+            void work(t("Reading file…"), async () => {
+              const preview = await call<V>("chat.preview", { kind: chatImport.kind, path: chatImport.path, ...options });
+              setChatImport({ ...chatImport, preview });
+            })
+          }
+          run={(assign) =>
+            void work(t("Importing…"), async () => {
+              const { kind, path, preview } = chatImport;
+              const result = await call<V>("chat.import", { kind, path, assign, me: preview.me, date_order: preview.dateOrder });
+              setRows(await call<Row[]>("contacts.list"));
+              setChatImport(null);
+              setNotice(
+                t("Chats imported · Conversations: {conversations} · New messages: {added} · New contacts: {created}", {
+                  conversations: result.conversations,
+                  added: result.added,
+                  created: result.created,
+                }),
+              );
+              refresh();
+            })
+          }
         />
       )}
       {importPreview && (

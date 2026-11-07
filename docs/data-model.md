@@ -31,6 +31,8 @@ All data lives in one **workspace** folder made of ordinary files (`.ktable` tab
 ├─ mail/
 │  ├─ email.ktable              mail index (maintained by gc-mail, table name email_messages)
 │  └─ <account>/<yyyy>/<mm>/<id>.md  one Markdown file per email, attachments next to it
+├─ chats/
+│  └─ <whatsapp|linkedin>/<conversation>/<yyyy>/<mm>/<dd>.md  imported messages of one conversation and day
 └─ campaigns/
    └─ <name>.md                 background material for an outreach campaign (for example a one-page project brief)
 ```
@@ -157,11 +159,12 @@ The timeline index. Bodies are not in the table but in Markdown files.
 | Kind | single_select | message / post / intake / draft / analysis |
 | Title | text | Email subject or a one-line summary |
 | File | text | Workspace-relative path (mail md, intake md, draft md) |
-| Message-ID | text | Email only; used for de-duplication and threading |
+| Message-ID | text | De-duplication: the email Message-ID (also used for threading), `gcsp:<source>:<event>`, or `chat:<channel>:<conversation>:<date>:<in\|out>` for imported chats |
 
 Where rows come from:
 
 - **Mail**: after gc-mail syncs a message, its sender and recipients are matched against `channels`; on a match an interaction is written (`system:emailsync`). Unmatched mail is not written here; it stays in `email.ktable` and can be assigned to a person in the UI.
+- **Imported chats**: a WhatsApp chat export or a LinkedIn data archive is imported from a file the person downloaded (nothing signs in to those accounts). Each message becomes a block in the day transcript `chats/<channel>/<conversation>/<yyyy>/<mm>/<dd>.md`, keyed by a hash of its time, author and text so importing again only adds new messages. The timeline gets one row per contact, day and direction (`Kind = message`, origin `system:chatimport`); `Last contacted`, `Last reply` and the stage advance as for mail, except that closed and suppressed contacts keep their stage. The interactions and contacts tables are each written once per import.
 - **Recorded notes**: an `intake/...md` file is written, then a row with `Kind = intake`.
 - **Sent**: after a successful send, the draft status becomes `sent` and a row with `Direction = out` is written.
 

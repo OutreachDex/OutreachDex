@@ -74,6 +74,8 @@ impl Service {
     }
 }
 pub mod import;
+pub mod chat_parse;
+pub mod chats;
 pub mod activity;
 pub mod agent;
 pub mod app;

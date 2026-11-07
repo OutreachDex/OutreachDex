@@ -21,6 +21,9 @@ await cp(path.join(root, "target/test-workspace"), folder, { recursive: true });
 const scratch = await realpath(await mkdtemp(path.join(tmpdir(), "globalcontact-outreach-csv-")));
 const csv = path.join(scratch, "users.csv");
 await writeFile(csv, "Name,Email,Company,Plan\nLin Wei,lin@example.test,Northwind,Pro\nChen Zhuo,chen@example.test,Indie developer,Trial\n");
+// A WhatsApp "Export chat" file: the partner is named in the file name, the owner is the other author.
+const chat = path.join(scratch, "WhatsApp Chat with Lin Wei.txt");
+await writeFile(chat, "[02/03/2026, 09:15:00] Me Myself: Hi Lin, thanks for trying the beta\n[02/03/2026, 10:02:11] Lin Wei: Happy to! The export is great\nbut import is slow\n");
 const port = browserName === "webkit" ? 18792 : 18791;
 const mock = spawn("node", [path.join(root, "scripts/gcsp-mock.mjs"), "--port", String(port), "--token", "e2e"], { stdio: "ignore" });
 const native = spawn(path.join(root, "target/debug/examples/host"), {
@@ -60,7 +63,10 @@ page.setDefaultTimeout(30000);
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.exposeFunction("nativeInvoke", async (command, args) => {
-  if (command === "plugin:dialog|open") return args?.options?.filters ? csv : folder;
+  if (command === "plugin:dialog|open") {
+    const filter = args?.options?.filters?.[0]?.name;
+    return filter === "WhatsApp" ? chat : filter ? csv : folder;
+  }
   if (command === "plugin:dialog|confirm") return true;
   // Tauri v2's confirm() goes through the message command and compares the button label.
   if (command === "plugin:dialog|message") return "Ok";
@@ -132,6 +138,7 @@ try {
   // CSV import with suggested mapping; Plan is not a field and stays unmapped.
   await nav(page, "People");
   await page.getByRole("button", { name: "Import", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /^Contacts \(CSV/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.locator(".import-grid").waitFor();
   assert.equal(await dialog.getByLabel("Field for Name").inputValue(), "Name");
@@ -142,6 +149,20 @@ try {
   assert.equal(await page.locator("table.grid.people tbody tr").count(), contactsBefore + 2, "imported people show with the result");
   const lin = (await app("contacts.list")).find((r) => r.values.Name === "Lin Wei");
   assert.equal(lin.values.Email, "lin@example.test");
+
+  // A WhatsApp chat export: the partner matches Lin Wei by name and the chat lands on her timeline.
+  await page.getByRole("button", { name: "Import", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /^WhatsApp chat/ }).click();
+  const chatDialog = page.getByRole("dialog");
+  await chatDialog.locator(".import-grid").waitFor();
+  assert.equal(await chatDialog.getByLabel("Contact for Lin Wei").inputValue(), lin.values.Slug);
+  await chatDialog.getByText("1 from them · 1 from you").waitFor();
+  await chatDialog.getByRole("button", { name: "Import conversations (1)" }).click();
+  await page.locator(".banner.notice", { hasText: "New messages: 2" }).waitFor();
+  const linDetail = await app("contact.get", { slug: lin.values.Slug });
+  const chats = linDetail.timeline.filter((r) => r.values.Channel === "whatsapp");
+  assert.deepEqual(chats.map((r) => r.values.Direction).sort(), ["in", "out"], "one row per day and direction");
+  assert(linDetail.contact.values["Last reply"].startsWith("2026-03-02"), "her reply is the last reply");
 
   // ⌘K finds a person and opens them; bulk-select two rows and change their stage.
   await page.keyboard.press(process.platform === "darwin" ? "Meta+k" : "Control+k");

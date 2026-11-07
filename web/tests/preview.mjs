@@ -131,6 +131,7 @@ try {
     if (theme === "light") {
       await page.getByRole("button", { name: /^People/ }).first().click();
       await page.getByRole("button", { name: /Import/ }).click();
+      await page.getByRole("dialog").getByRole("button", { name: /^Contacts \(CSV/ }).click();
       await page.locator(".import-grid").waitFor();
       await shot("light-import");
       await page.getByRole("button", { name: /^Import \d+ rows/ }).click();

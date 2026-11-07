@@ -338,6 +338,8 @@ impl App {
                 json!({"created":service.add_channel(text(&args,"slug")?,text(&args,"kind")?,text(&args,"value")?,text(&args,"source")?,args["verified"]==true).await?})
             }
             "import.preview" => service.import_preview(Path::new(text(&args, "path")?))?,
+            "chat.preview" => service.chat_preview(&args).await?,
+            "chat.import" => service.chat_import(&args).await?,
             "import.run" => {
                 let mapping: Vec<Option<String>> = serde_json::from_value(args["mapping"].clone())
                     .map_err(|_| "Invalid column mapping.")?;
@@ -646,6 +648,7 @@ impl App {
                 | "contact.get"
                 | "workspace.config"
                 | "import.preview"
+                | "chat.preview"
                 | "source.check"
                 | "contact.fields"
                 | "contact.history"

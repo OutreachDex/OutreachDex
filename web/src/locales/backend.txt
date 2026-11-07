@@ -146,3 +146,15 @@ has_more is true but next_cursor did not advance; clients would repeat the same 
 Items are not in ascending update order; incremental sync may miss data
 Repeated requests for the first page return the same result
 Repeated requests for the first page return different results; use a stable sort order
+Choose a WhatsApp chat export or a LinkedIn data archive.
+Choose which of the chat's authors is you.
+Only your own messages are in this chat, and the file name doesn't say who it was with. Rename the file to “WhatsApp Chat with <name>.txt”.
+Choose which participant is you.
+The export is over 200 MB. Export the chat without media.
+The file isn't a readable .zip archive.
+The file isn't UTF-8 text.
+The archive has no chat text file. Export the chat again from WhatsApp.
+This doesn't look like a WhatsApp chat export. In WhatsApp, open the chat → More → Export chat.
+The export has no messages.
+The archive has no messages.csv. On LinkedIn, request your data with “Messages” selected.
+messages.csv has no FROM and DATE columns.
